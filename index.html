@@ -1,0 +1,227 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VidScript.ai Project Timeline (By Phase)</title>
+<style>
+  :root {
+    --page: #eef0f4;
+    --sheet: #ffffff;
+    --ink: #1c1f26;
+    --muted: #5d6573;
+    --line: #8a909c;
+    --line-soft: #c9ced8;
+    --exec: #3f33d6;
+    --today: #c9ccd3;
+    --hover: #eceafd;
+    --head: #f4f5f8;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #12141a;
+      --sheet: #1b1e26;
+      --ink: #e8eaf0;
+      --muted: #9aa2b1;
+      --line: #5b6272;
+      --line-soft: #343947;
+      --exec: #6b61ff;
+      --today: #4a4f5c;
+      --hover: #262a47;
+      --head: #232733;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  main { max-width: 1360px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; font-weight: 700; }
+  .sub { color: var(--muted); margin: 0 0 4px; }
+  .stack { color: var(--muted); margin: 0 0 16px; font-size: 13px; max-width: 90ch; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .filters button {
+    font: inherit; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line-soft); background: var(--sheet); color: var(--ink);
+  }
+  .filters button[aria-pressed="true"] { background: var(--exec); border-color: var(--exec); color: #fff; }
+  .filters button:focus-visible { outline: 3px solid var(--exec); outline-offset: 2px; }
+
+  .sheet { background: var(--sheet); border: 1px solid var(--line-soft); border-radius: 8px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 1380px; table-layout: fixed; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; font-size: 13px; text-align: left; }
+  thead th { background: var(--head); text-align: center; font-weight: 700; }
+  th.mo { font-size: 11.5px; padding: 3px 0; font-weight: 600; }
+  td.cell { padding: 0; height: 28px; }
+  td.cell.on { background: var(--exec); }
+  td.cell.today { background: var(--today); }
+  td.phase { font-weight: 700; text-align: center; vertical-align: middle; background: var(--head); }
+  tr.first td { border-top: 2px solid var(--ink); }
+  tbody tr:hover td:not(.on):not(.today):not(.phase) { background: var(--hover); }
+  td.remarks { color: var(--muted); }
+  td.remarks:focus { outline: 2px solid var(--exec); outline-offset: -2px; color: var(--ink); }
+  th.today-head { background: var(--today); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; padding: 12px 4px; }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend i { display: inline-block; width: 36px; height: 16px; }
+  .note { color: var(--muted); font-size: 12.5px; margin: 4px 0 0; max-width: 90ch; }
+  .sr { position: absolute; left: -9999px; }
+
+  @media (max-width: 640px) { h1 { font-size: 1.2rem; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>VidScript.ai Project Timeline (By Phase)</h1>
+  <p class="sub">January 2025 to October 2026 (present), month by month. Today is 30 October 2026.</p>
+  <p class="stack">React.js, Node.js, Express.js, OpenAI Whisper, Google Cloud Speech-to-Text, MongoDB, PostgreSQL, AWS S3.
+    Tap a phase to focus on it. Click a Remarks cell to type a note.</p>
+    <h2>by Jakhongir Tojiev </h2>
+    <h3>Student id: 61338</h3>
+
+  <div class="filters" id="filters" role="group" aria-label="Filter by phase"></div>
+
+  <div class="sheet">
+    <table id="gantt">
+      <caption class="sr">VidScript.ai timeline by phase, area, activity and month</caption>
+      <colgroup>
+        <col style="width:96px"><col style="width:100px"><col style="width:290px">
+        <col span="22" style="width:40px">
+        <col style="width:120px"><col style="width:140px">
+      </colgroup>
+      <thead>
+        <tr>
+          <th rowspan="2">Phase</th><th rowspan="2">Area</th><th rowspan="2">Activity</th>
+          <th colspan="12">2025</th><th colspan="10">2026</th>
+          <th rowspan="2">Responsible Team</th><th rowspan="2">Remarks</th>
+        </tr>
+        <tr id="monthRow"></tr>
+      </thead>
+      <tbody id="body"></tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    <strong>Legend</strong>
+    <span><i style="background:var(--exec)"></i>Execution</span>
+    <span><i style="background:var(--today)"></i>Today (October 2026)</span>
+  </div>
+  <p class="note">Only the January 2025 start and the ongoing status come from the project description. The month ranges for each activity are planned estimates, so edit the <code>phases</code> list in the code to match what actually happened.</p>
+</main>
+
+<script>
+  // Month index: 0 = Jan 2025 ... 21 = Oct 2026 (today).
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const TOTAL = 22;
+  const TODAY = 21;
+
+  // [area, activity, startMonth, endMonth, team]
+  const phases = [
+    { name: "Planning / Initiation", rows: [
+      ["Product", "Define scope, user needs and feature roadmap", 0, 1, "Product"],
+      ["Architecture", "Choose tech stack (React, Node/Express, MongoDB, PostgreSQL)", 0, 1, "Backend"],
+      ["AI / ML", "Compare speech-to-text engines (Whisper vs Google Cloud STT)", 0, 2, "AI / ML"],
+      ["DevOps", "Set up repository, CI/CD and AWS S3 storage", 1, 2, "DevOps"],
+    ]},
+    { name: "Organising", rows: [
+      ["Design", "UI/UX wireframes and clickable prototype", 1, 3, "Design"],
+      ["Backend", "API design and database schemas (MongoDB, PostgreSQL)", 2, 4, "Backend"],
+      ["Backend", "User accounts and authentication", 3, 4, "Backend"],
+      ["DevOps", "Video upload and storage pipeline on AWS S3", 3, 5, "DevOps"],
+      ["AI / ML", "Prototype Whisper transcription service", 3, 5, "AI / ML"],
+    ]},
+    { name: "Leading", rows: [
+      ["Frontend", "React.js interface and video upload flow", 3, 9, "Frontend"],
+      ["Backend", "Node.js / Express API and YouTube link import", 4, 9, "Backend"],
+      ["AI / ML", "Real-time speech-to-text with Whisper and Google STT", 5, 10, "AI / ML"],
+      ["Frontend", "Subtitle editor and SRT / VTT download", 9, 13, "Frontend"],
+      ["AI / ML", "Multilingual translation", 9, 14, "AI / ML"],
+      ["AI / ML", "AI-driven summarisation", 13, 17, "AI / ML"],
+      ["Backend", "Performance optimisation and caching", 12, 18, "Backend"],
+      ["DevOps", "Public beta release", 10, 11, "DevOps"],
+    ]},
+    { name: "Controlling", rows: [
+      ["Quality", "Transcription accuracy testing and bug fixing", 6, 21, "QA"],
+      ["Product", "User feedback and usage analytics", 11, 21, "Product"],
+      ["Security", "Security and access review", 14, 21, "Backend"],
+      ["Finance", "Cloud and API cost monitoring (AWS, speech APIs)", 12, 21, "DevOps"],
+      ["Product", "Roadmap review and next release planning", 19, 21, "Product"],
+    ]},
+  ];
+
+  // Header: months
+  const monthRow = document.getElementById("monthRow");
+  for (let i = 0; i < TOTAL; i++) {
+    const th = document.createElement("th");
+    th.className = "mo" + (i === TODAY ? " today-head" : "");
+    th.textContent = MONTHS[i % 12];
+    monthRow.appendChild(th);
+  }
+
+  // Body
+  const body = document.getElementById("body");
+  function render(activePhase) {
+    body.innerHTML = "";
+    phases.forEach((p, pi) => {
+      if (activePhase !== "all" && activePhase !== String(pi)) return;
+      p.rows.forEach((r, ri) => {
+        const [area, activity, s, e, team] = r;
+        const tr = document.createElement("tr");
+        if (ri === 0) tr.className = "first";
+        if (ri === 0) {
+          const ph = document.createElement("td");
+          ph.className = "phase";
+          ph.rowSpan = p.rows.length;
+          ph.textContent = p.name;
+          tr.appendChild(ph);
+        }
+        [area, activity].forEach(t => {
+          const td = document.createElement("td");
+          td.textContent = t;
+          tr.appendChild(td);
+        });
+        for (let m = 0; m < TOTAL; m++) {
+          const td = document.createElement("td");
+          td.className = "cell" + (m >= s && m <= e ? " on" : m === TODAY ? " today" : "");
+          tr.appendChild(td);
+        }
+        const tm = document.createElement("td");
+        tm.textContent = team;
+        tr.appendChild(tm);
+        const rm = document.createElement("td");
+        rm.className = "remarks";
+        rm.contentEditable = "true";
+        rm.setAttribute("aria-label", "Remarks for " + activity);
+        tr.appendChild(rm);
+        body.appendChild(tr);
+      });
+    });
+  }
+
+  // Phase filter
+  const filters = document.getElementById("filters");
+  const options = [["all", "All phases"], ...phases.map((p, i) => [String(i), p.name])];
+  options.forEach(([val, label]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = label;
+    b.setAttribute("aria-pressed", val === "all");
+    b.addEventListener("click", () => {
+      filters.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+      render(val);
+    });
+    filters.appendChild(b);
+  });
+
+  render("all");
+</script>
+</body>
+</html>
